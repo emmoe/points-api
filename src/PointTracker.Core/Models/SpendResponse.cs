@@ -4,6 +4,6 @@ namespace PointTracker.Core.Models
 {
     public record SpendResponse
     {
-        public IList<SpendResult> Results { get; init; }
+        public IEnumerable<SpendResult> Results { get; init; }
     }
 }

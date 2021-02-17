@@ -2,45 +2,96 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PointTracker.Core.Services
 {
     public class TransactionService
     {
-        public IList<TransactionRecord> transactions;
+        public IList<TransactionRecord> _transactions;
 
         public TransactionService()
         {
-            transactions = new List<TransactionRecord>();
+            _transactions = new List<TransactionRecord>();
         }
 
         public TransactionService(IList<TransactionRecord> transactions)
         {
-            this.transactions = transactions;
+            _transactions = transactions;
         }
 
         public void Add(TransactionRecord transaction)
         {
-            transactions.Add(transaction);
+            _transactions.Add(transaction);
         }
 
         public SpendResponse Spend(int points)
         {
-            throw new NotImplementedException();
+            HandleNegativePoints();
+            return ToSpendResponse(DeductPoints(points, _transactions));
         }
 
-        public int GetUserBalance()
+        private Dictionary<string, int> DeductPoints(int points, IEnumerable<TransactionRecord> transactions)
         {
-            return transactions.Sum(t => t.Points);
+            var deductionTransactions = transactions.OrderBy(o => o.Timestamp);
+            var pointsToDeduct = points;
+            var deductions = new Dictionary<string, int>();
+            foreach (var t in deductionTransactions)
+            {
+                _transactions.Remove(t);
+                if (HasSufficientPoints(pointsToDeduct, t.Points))
+                {
+                    //var newPointValue = t.Points - pointsToDeduct;
+                    deductions[t.PayerName] = GetUpdatedPointDeduction(pointsToDeduct, deductions, t.PayerName);
+                    _transactions.Add(t with { Points = t.Points - pointsToDeduct });
+                    break;
+                    //var newTransaction = t with { Points = newPointValue };
+                    //pointsToDeduct = 0;
+                }
+                else
+                {
+                    pointsToDeduct -= t.Points;
+                    deductions[t.PayerName] = GetUpdatedPointDeduction(t.Points, deductions, t.PayerName);
+                }
+            }
+            return deductions;
         }
 
-        public Dictionary<string, int> GetPayerBalance()
+        private static bool HasSufficientPoints(int pointsToDeduct, int existingPoints) => existingPoints >= pointsToDeduct;
+
+        private static int GetUpdatedPointDeduction(int pointsToDeduct, Dictionary<string, int> deductions, string payer)
         {
-            return transactions
+            var payerPointsDeducted = pointsToDeduct * -1;
+            if (deductions.TryGetValue(payer, out int value))
+            {
+                payerPointsDeducted -= value;
+            }
+
+            return payerPointsDeducted;
+        }
+
+        private void HandleNegativePoints()
+        {
+            var negativeTransactions = _transactions.Where(t => t.Points < 0).OrderBy(t => t.Timestamp);
+            if (negativeTransactions.Any())
+            {
+                foreach (var nt in negativeTransactions)
+                {
+                    _transactions.Remove(nt);
+                    var availableTransactions = _transactions.Where(t => t.PayerName == nt.PayerName && t.Timestamp < nt.Timestamp && t.Points > 0);
+                    DeductPoints(Math.Abs(nt.Points), availableTransactions);
+                }
+            }
+        }
+
+        public int GetUserBalance() => 
+            _transactions.Sum(t => t.Points);
+
+        public SpendResponse GetPayerBalance() => 
+            ToSpendResponse(_transactions
                 .GroupBy(x => x.PayerName)
-                .ToDictionary(g => g.Key, g => g.Sum(p => p.Points));
-        }
+                .ToDictionary(g => g.Key, g => g.Sum(p => p.Points)));
+
+        private static SpendResponse ToSpendResponse(Dictionary<string, int> payerPoints) => 
+            new SpendResponse { Results = payerPoints.Select(p => new SpendResult { PayerName = p.Key, Points = p.Value }) };
     }
 }
