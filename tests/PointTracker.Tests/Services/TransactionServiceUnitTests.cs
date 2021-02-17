@@ -17,11 +17,12 @@ namespace PointTracker.Tests.Services
                 new TransactionRecord {PayerName = "Miller Coors", Points= 10000, Timestamp = new DateTime(2020, 11, 01, 14, 0, 0)},
                 new TransactionRecord {PayerName = "Dannon", Points= -200, Timestamp = new DateTime(2020, 10, 31, 15, 0, 0)},
             };
+        private ITransactionService subject;
 
         [Fact]
         public void WhenSpendIsCalledWithSufficientPoints()
         {
-            var subject = new TransactionService(transactions);
+            subject = new TransactionService(transactions);
             var response = subject.Spend(5000);
             var expected = new SpendResponse
             {
@@ -37,7 +38,7 @@ namespace PointTracker.Tests.Services
         [Fact]
         public void WhenSpendIsCalledWithInsufficientPoints()
         {
-            var subject = new TransactionService(transactions);
+            subject = new TransactionService(transactions);
             var response = subject.Spend(20000);
             var expected = new SpendResponse
             {
@@ -55,7 +56,7 @@ namespace PointTracker.Tests.Services
         public void WhenUserBalanceIsCalled()
         {
 
-            var subject = new TransactionService(transactions);
+            subject = new TransactionService(transactions);
             var response = subject.GetUserBalance();
             response.Should().Be(11300, because: "that is the sum of all the points");
         }
@@ -63,7 +64,7 @@ namespace PointTracker.Tests.Services
         [Fact]
         public void WhenPayerBalanceIsCalledWithPositivePointValues()
         {
-            var subject = new TransactionService(transactions);
+            subject = new TransactionService(transactions);
             var response = subject.GetPayerBalance();
             var expected = new SpendResponse
             {
@@ -87,7 +88,7 @@ namespace PointTracker.Tests.Services
                 new TransactionRecord {PayerName = "Unilever", Points= -500, Timestamp = new DateTime(2020, 10, 31, 11, 0, 0)},
                 new TransactionRecord {PayerName = "Miller Coors", Points= -1000, Timestamp = new DateTime(2020, 11, 01, 14, 0, 0)},
             };
-            var subject = new TransactionService(negativeTransactionTotal);
+            subject = new TransactionService(negativeTransactionTotal);
             var response = subject.GetPayerBalance();
             var expected = new SpendResponse
             {
@@ -104,17 +105,19 @@ namespace PointTracker.Tests.Services
         [Fact]
         public void WhenAddIsCalled()
         {
-            var subject = new TransactionService(transactions);
+            subject = new TransactionService(transactions);
             subject.Add(new TransactionRecord { PayerName = "Test", Points = 100, Timestamp = DateTime.Now });
-            subject._transactions.Should().HaveCount(6, because: "a new transaction was added to the list");
+            var response = subject.GetPayerBalance();
+            response.Results.Should().HaveCount(4, because: "a transaction with a new payer was added to the list");
         }
 
         [Fact]
         public void WhenRemoveAllIsCalled()
         {
-            var subject = new TransactionService(transactions);
+            subject = new TransactionService(transactions);
             subject.RemoveAll();
-            subject._transactions.Should().HaveCount(0, because: "all transactions were remoted from the list");
+            var response = subject.GetPayerBalance();
+            response.Results.Should().HaveCount(0, because: "all transactions were remoted from the list");
         }
     }
 }

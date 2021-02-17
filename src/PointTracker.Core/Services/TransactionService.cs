@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace PointTracker.Core.Services
 {
-    public class TransactionService
+    public class TransactionService : ITransactionService
     {
         public IList<TransactionRecord> _transactions;
 
