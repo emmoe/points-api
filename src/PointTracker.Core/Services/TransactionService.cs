@@ -24,10 +24,40 @@ namespace PointTracker.Core.Services
             _transactions.Add(transaction);
         }
 
+        public void RemoveAll()
+        {
+            _transactions = new List<TransactionRecord>();
+        }
+
         public SpendResponse Spend(int points)
         {
             HandleNegativePoints();
             return ToSpendResponse(DeductPoints(points, _transactions));
+        }
+
+        public int GetUserBalance() =>
+            _transactions.Sum(t => t.Points);
+
+        public SpendResponse GetPayerBalance() =>
+            ToSpendResponse(_transactions
+                .GroupBy(x => x.PayerName)
+                .ToDictionary(g => g.Key, g => Math.Max(g.Sum(p => p.Points), 0)));
+
+        private static SpendResponse ToSpendResponse(Dictionary<string, int> payerPoints) =>
+            new SpendResponse { Results = payerPoints.Select(p => new SpendResult { PayerName = p.Key, Points = p.Value }) };
+
+        private void HandleNegativePoints()
+        {
+            var negativeTransactions = _transactions.Where(t => t.Points < 0).OrderBy(t => t.Timestamp);
+            if (negativeTransactions.Any())
+            {
+                foreach (var nt in negativeTransactions)
+                {
+                    _transactions.Remove(nt);
+                    var availableTransactions = _transactions.Where(t => t.PayerName == nt.PayerName && t.Timestamp < nt.Timestamp && t.Points > 0);
+                    DeductPoints(Math.Abs(nt.Points), availableTransactions);
+                }
+            }
         }
 
         private Dictionary<string, int> DeductPoints(int points, IEnumerable<TransactionRecord> transactions)
@@ -40,12 +70,9 @@ namespace PointTracker.Core.Services
                 _transactions.Remove(t);
                 if (HasSufficientPoints(pointsToDeduct, t.Points))
                 {
-                    //var newPointValue = t.Points - pointsToDeduct;
                     deductions[t.PayerName] = GetUpdatedPointDeduction(pointsToDeduct, deductions, t.PayerName);
                     _transactions.Add(t with { Points = t.Points - pointsToDeduct });
                     break;
-                    //var newTransaction = t with { Points = newPointValue };
-                    //pointsToDeduct = 0;
                 }
                 else
                 {
@@ -63,35 +90,9 @@ namespace PointTracker.Core.Services
             var payerPointsDeducted = pointsToDeduct * -1;
             if (deductions.TryGetValue(payer, out int value))
             {
-                payerPointsDeducted -= value;
+                payerPointsDeducted += value;
             }
-
             return payerPointsDeducted;
         }
-
-        private void HandleNegativePoints()
-        {
-            var negativeTransactions = _transactions.Where(t => t.Points < 0).OrderBy(t => t.Timestamp);
-            if (negativeTransactions.Any())
-            {
-                foreach (var nt in negativeTransactions)
-                {
-                    _transactions.Remove(nt);
-                    var availableTransactions = _transactions.Where(t => t.PayerName == nt.PayerName && t.Timestamp < nt.Timestamp && t.Points > 0);
-                    DeductPoints(Math.Abs(nt.Points), availableTransactions);
-                }
-            }
-        }
-
-        public int GetUserBalance() => 
-            _transactions.Sum(t => t.Points);
-
-        public SpendResponse GetPayerBalance() => 
-            ToSpendResponse(_transactions
-                .GroupBy(x => x.PayerName)
-                .ToDictionary(g => g.Key, g => g.Sum(p => p.Points)));
-
-        private static SpendResponse ToSpendResponse(Dictionary<string, int> payerPoints) => 
-            new SpendResponse { Results = payerPoints.Select(p => new SpendResult { PayerName = p.Key, Points = p.Value }) };
     }
 }
