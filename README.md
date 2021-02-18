@@ -4,10 +4,12 @@ This project is a simple collection of HTTP endpoints that allow transactions to
 
 ## Dependencies
 
-.NET SDK 5.0.x
+.NET SDK 5.0.x (can be downloaded from here: https://dotnet.microsoft.com/download/dotnet/5.0)
 
 ## Running the application
 
-In a terminal in the points-api folder, run `dotnet run` to start the backend.
+In a terminal, ensure dotnet is installed with the following command: `dotnet --version`. 
 
-Navigate to `localhost:<port>/swagger` to interact with the endpoints.
+If so, navigate to the points-api/src/PointTracker.Web folder and run `dotnet run` to start the backend.
+
+Navigate to `http://localhost:<port>/swagger` to interact with the endpoints. Under each request in Swagger, you can click the "Try it out" button to interact with the API.
