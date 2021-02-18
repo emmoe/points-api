@@ -11,11 +11,11 @@ namespace PointTracker.Tests.Services
     {
         private readonly List<TransactionRecord> transactions = new List<TransactionRecord>
             {
-                new TransactionRecord {PayerName = "Dannon", Points= 1000, Timestamp = new DateTime(2020, 11, 02, 14, 0, 0)},
-                new TransactionRecord {PayerName = "Dannon", Points= 300, Timestamp = new DateTime(2020, 10, 31, 10, 0, 0)},
-                new TransactionRecord {PayerName = "Unilever", Points= 200, Timestamp = new DateTime(2020, 10, 31, 11, 0, 0)},
-                new TransactionRecord {PayerName = "Miller Coors", Points= 10000, Timestamp = new DateTime(2020, 11, 01, 14, 0, 0)},
-                new TransactionRecord {PayerName = "Dannon", Points= -200, Timestamp = new DateTime(2020, 10, 31, 15, 0, 0)},
+                new TransactionRecord {PayerName = "Dannon", Points = 1000, Timestamp = new DateTime(2020, 11, 02, 14, 0, 0)},
+                new TransactionRecord {PayerName = "Dannon", Points = 300, Timestamp = new DateTime(2020, 10, 31, 10, 0, 0)},
+                new TransactionRecord {PayerName = "Unilever", Points = 200, Timestamp = new DateTime(2020, 10, 31, 11, 0, 0)},
+                new TransactionRecord {PayerName = "Miller Coors", Points = 10000, Timestamp = new DateTime(2020, 11, 01, 14, 0, 0)},
+                new TransactionRecord {PayerName = "Dannon", Points = -200, Timestamp = new DateTime(2020, 10, 31, 15, 0, 0)},
             };
         private ITransactionService subject;
 
@@ -75,10 +75,10 @@ namespace PointTracker.Tests.Services
         {
             var negativeTransactionTotal = new List<TransactionRecord>
             {
-                new TransactionRecord {PayerName = "Dannon", Points= -1000, Timestamp = new DateTime(2020, 11, 02, 14, 0, 0)},
-                new TransactionRecord {PayerName = "Dannon", Points= 300, Timestamp = new DateTime(2020, 10, 31, 10, 0, 0)},
-                new TransactionRecord {PayerName = "Unilever", Points= -500, Timestamp = new DateTime(2020, 10, 31, 11, 0, 0)},
-                new TransactionRecord {PayerName = "Miller Coors", Points= -1000, Timestamp = new DateTime(2020, 11, 01, 14, 0, 0)},
+                new TransactionRecord {PayerName = "Dannon", Points = -1000, Timestamp = new DateTime(2020, 11, 02, 14, 0, 0)},
+                new TransactionRecord {PayerName = "Dannon", Points = 300, Timestamp = new DateTime(2020, 10, 31, 10, 0, 0)},
+                new TransactionRecord {PayerName = "Unilever", Points = -500, Timestamp = new DateTime(2020, 10, 31, 11, 0, 0)},
+                new TransactionRecord {PayerName = "Miller Coors", Points = -1000, Timestamp = new DateTime(2020, 11, 01, 14, 0, 0)},
             };
             subject = new TransactionService(negativeTransactionTotal);
             var response = subject.GetPayerBalance();

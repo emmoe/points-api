@@ -44,12 +44,9 @@ namespace PointTracker.Core.Services
             _transactions.Sum(t => t.Points);
 
         /// <inheritdoc/>
-        public IEnumerable<SpendResult> GetPayerBalance()
-        {
-            return _transactions
+        public IEnumerable<SpendResult> GetPayerBalance() => _transactions
                 .GroupBy(x => x.PayerName)
                 .Select(t => new SpendResult { PayerName = t.Key, Points = Math.Max(t.Sum(p => p.Points), 0) });
-        }
 
         private void HandleNegativePoints()
         {

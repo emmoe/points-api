@@ -21,7 +21,7 @@ namespace PointTracker.Web.Controllers
         /// </summary>
         /// <param name="payerName">The name of the payer.</param>
         /// <param name="points">The number of points to add.</param>
-        /// <param name="timestamp">The timestamp of the transaction.</param>
+        /// <param name="timestamp">The ISO 8601 timestamp of the transaction.</param>
         [Route("Add")]
         [HttpPost]
         public IActionResult Add(string payerName, int points, DateTime timestamp)
