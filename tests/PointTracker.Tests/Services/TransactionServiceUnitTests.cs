@@ -24,15 +24,13 @@ namespace PointTracker.Tests.Services
         {
             subject = new TransactionService(transactions);
             var response = subject.Spend(5000);
-            var expected = new SpendResponse
+            var expected = new List<SpendResult> 
             {
-                Results = new List<SpendResult> {
                 new SpendResult { PayerName = "Dannon", Points = -100 },
                 new SpendResult { PayerName = "Unilever", Points = -200 },
                 new SpendResult { PayerName = "Miller Coors", Points = -4700 },
-            }
             };
-            response.Results.Should().BeEquivalentTo(expected.Results, because: "a total of 5000 points was deducted from these payers");
+            response.Should().BeEquivalentTo(expected, because: "a total of 5000 points was deducted from these payers");
         }
 
         [Fact]
@@ -40,16 +38,13 @@ namespace PointTracker.Tests.Services
         {
             subject = new TransactionService(transactions);
             var response = subject.Spend(20000);
-            var expected = new SpendResponse
+            var expected =  new List<SpendResult>
             {
-                Results = new List<SpendResult>
-                {
-                    new SpendResult { PayerName = "Dannon", Points = -1100 },
-                    new SpendResult { PayerName = "Unilever", Points = -200 },
-                    new SpendResult { PayerName = "Miller Coors", Points = -10000 },
-                }
+                new SpendResult { PayerName = "Dannon", Points = -1100 },
+                new SpendResult { PayerName = "Unilever", Points = -200 },
+                new SpendResult { PayerName = "Miller Coors", Points = -10000 },
             };
-            response.Results.Should().BeEquivalentTo(expected.Results, because: "it deducted the maximum available points for each payer, but did not go negative");
+            response.Should().BeEquivalentTo(expected, because: "it deducted the maximum available points for each payer, but did not go negative");
         }
 
         [Fact]
@@ -66,16 +61,13 @@ namespace PointTracker.Tests.Services
         {
             subject = new TransactionService(transactions);
             var response = subject.GetPayerBalance();
-            var expected = new SpendResponse
+            var expected =  new List<SpendResult>
             {
-                Results = new List<SpendResult>
-                {
-                    new SpendResult { PayerName = "Dannon", Points = 1100 },
-                    new SpendResult { PayerName = "Unilever", Points = 200 },
-                    new SpendResult { PayerName = "Miller Coors", Points = 10000 },
-                }
+                new SpendResult { PayerName = "Dannon", Points = 1100 },
+                new SpendResult { PayerName = "Unilever", Points = 200 },
+                new SpendResult { PayerName = "Miller Coors", Points = 10000 },
             };
-            response.Results.Should().BeEquivalentTo(expected.Results, because: "that is the sum of points available per payer");
+            response.Should().BeEquivalentTo(expected, because: "that is the sum of points available per payer");
         }
 
         [Fact]
@@ -90,16 +82,13 @@ namespace PointTracker.Tests.Services
             };
             subject = new TransactionService(negativeTransactionTotal);
             var response = subject.GetPayerBalance();
-            var expected = new SpendResponse
+            var expected = new List<SpendResult>
             {
-                Results = new List<SpendResult>
-                {
-                    new SpendResult { PayerName = "Dannon", Points = 0 },
-                    new SpendResult { PayerName = "Unilever", Points = 0 },
-                    new SpendResult { PayerName = "Miller Coors", Points = 0 },
-                }
+                new SpendResult { PayerName = "Dannon", Points = 0 },
+                new SpendResult { PayerName = "Unilever", Points = 0 },
+                new SpendResult { PayerName = "Miller Coors", Points = 0 },
             };
-            response.Results.Should().BeEquivalentTo(expected.Results, because: "no payer has negative points");
+            response.Should().BeEquivalentTo(expected, because: "no payer has negative points");
         }
 
         [Fact]
@@ -108,7 +97,7 @@ namespace PointTracker.Tests.Services
             subject = new TransactionService(transactions);
             subject.Add(new TransactionRecord { PayerName = "Test", Points = 100, Timestamp = DateTime.Now });
             var response = subject.GetPayerBalance();
-            response.Results.Should().HaveCount(4, because: "a transaction with a new payer was added to the list");
+            response.Should().HaveCount(4, because: "a transaction with a new payer was added to the list");
         }
 
         [Fact]
@@ -117,7 +106,7 @@ namespace PointTracker.Tests.Services
             subject = new TransactionService(transactions);
             subject.RemoveAll();
             var response = subject.GetPayerBalance();
-            response.Results.Should().HaveCount(0, because: "all transactions were remoted from the list");
+            response.Should().HaveCount(0, because: "all transactions were remoted from the list");
         }
     }
 }

@@ -19,32 +19,37 @@ namespace PointTracker.Core.Services
             _transactions = transactions;
         }
 
+        /// <inheritdoc/>
         public void Add(TransactionRecord transaction)
         {
             _transactions.Add(transaction);
         }
 
+        /// <inheritdoc/>
         public void RemoveAll()
         {
             _transactions = new List<TransactionRecord>();
         }
 
-        public SpendResponse Spend(int points)
+        /// <inheritdoc/>
+        public IEnumerable<SpendResult> Spend(int points)
         {
             HandleNegativePoints();
-            return ToSpendResponse(DeductPoints(points, _transactions));
+            return DeductPoints(points, _transactions)
+                .Select(t => new SpendResult { PayerName = t.Key, Points = t.Value });
         }
 
+        /// <inheritdoc/>
         public int GetUserBalance() =>
             _transactions.Sum(t => t.Points);
 
-        public SpendResponse GetPayerBalance() =>
-            ToSpendResponse(_transactions
+        /// <inheritdoc/>
+        public IEnumerable<SpendResult> GetPayerBalance()
+        {
+            return _transactions
                 .GroupBy(x => x.PayerName)
-                .ToDictionary(g => g.Key, g => Math.Max(g.Sum(p => p.Points), 0)));
-
-        private static SpendResponse ToSpendResponse(Dictionary<string, int> payerPoints) =>
-            new SpendResponse { Results = payerPoints.Select(p => new SpendResult { PayerName = p.Key, Points = p.Value }) };
+                .Select(t => new SpendResult { PayerName = t.Key, Points = Math.Max(t.Sum(p => p.Points), 0) });
+        }
 
         private void HandleNegativePoints()
         {
